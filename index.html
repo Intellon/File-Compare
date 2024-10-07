@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel- und CSV-Dateien vergleichen</title>
+    <!-- Einbinden der SheetJS-Bibliothek -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        /* Allgemeines Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .label, label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="text"], select, input[type="file"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .delimiter-settings {
+            display: none;
+        }
+
+        .file-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .file-input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        #spaltenzuordnung div {
+            margin-bottom: 10px;
+        }
+
+        #spaltenzuordnung label {
+            display: inline-block;
+            width: 150px;
+            margin-right: 10px;
+        }
+
+        #compareButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        #compareButton:hover {
+            background-color: #0056b3;
+        }
+
+        #ergebnis {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .file-inputs {
+                flex-direction: column;
+            }
+
+            #spaltenzuordnung label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Excel- und CSV-Dateien vergleichen</h1>
+
+    <div class="section">
+        <h2>Dateityp und Delimiter</h2>
+        <label for="fileType">Dateityp wählen:</label>
+        <select id="fileType">
+            <option value="excel">Excel (.xlsx)</option>
+            <option value="csv">CSV</option>
+        </select>
+
+        <div id="delimiterDiv" class="delimiter-settings">
+            <h3>Delimiter einstellen</h3>
+            <label for="basisDelimiter">Delimiter Basis-Datei:</label>
+            <input type="text" id="basisDelimiter" value=";" maxlength="1" />
+            <label for="vergleichDelimiter">Delimiter Vergleichs-Datei:</label>
+            <input type="text" id="vergleichDelimiter" value=";" maxlength="1" />
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Dateien hochladen</h2>
+        <div class="file-inputs">
+            <div class="file-input">
+                <label for="basisFile">Basis-Datei hochladen:</label>
+                <input type="file" id="basisFile" accept=".xlsx, .csv" />
+            </div>
+            <div class="file-input">
+                <label for="vergleichFile">Vergleichs-Datei hochladen:</label>
+                <input type="file" id="vergleichFile" accept=".xlsx, .csv" />
+            </div>
+        </div>
+    </div>
+
+    <div id="spaltenzuordnung" class="section">
+        <!-- Spaltenzuordnung wird hier eingefügt -->
+    </div>
+
+    <div class="section">
+        <button id="compareButton">Vergleichen</button>
+    </div>
+
+    <div id="ergebnis" class="section">
+        <!-- Ergebnisse werden hier angezeigt -->
+    </div>
+</div>
+
+<script>
+    let basisData, vergleichData;
+    let basisSpaltenNamen = [];
+    let vergleichSpaltenNamen = [];
+
+    document.getElementById('fileType').addEventListener('change', (e) => {
+        const fileType = e.target.value;
+        const delimiterDiv = document.getElementById('delimiterDiv');
+        if (fileType === 'csv') {
+            delimiterDiv.style.display = 'block';
+        } else {
+            delimiterDiv.style.display = 'none';
+        }
+    });
+
+    document.getElementById('basisFile').addEventListener('change', (e) => {
+        if (e.target.files.length === 0) {
+            alert('Bitte wählen Sie eine Basis-Datei aus.');
+            return;
+        }
+        readFile(e.target.files[0], true, (data, headers) => {
+            basisData = data;
+            basisSpaltenNamen = headers;
+            if (vergleichSpaltenNamen.length > 0) {
+                createMappingOptions();
+            }
+        });
+    });
+
+    document.getElementById('vergleichFile').addEventListener('change', (e) => {
+        if (e.target.files.length === 0) {
+            alert('Bitte wählen Sie eine Vergleichs-Datei aus.');
+            return;
+        }
+        readFile(e.target.files[0], false, (data, headers) => {
+            vergleichData = data;
+            vergleichSpaltenNamen = headers;
+            if (basisSpaltenNamen.length > 0) {
+                createMappingOptions();
+            }
+        });
+    });
+
+    function readFile(file, isBasisDatei, callback) {
+        const fileType = document.getElementById('fileType').value;
+        if (fileType === 'excel') {
+            readExcelFile(file, callback);
+        } else if (fileType === 'csv') {
+            const delimiter = isBasisDatei
+                ? document.getElementById('basisDelimiter').value || ';'
+                : document.getElementById('vergleichDelimiter').value || ';';
+            readCSVFile(file, delimiter, callback);
+        } else {
+            alert('Bitte wählen Sie einen gültigen Dateityp aus.');
+        }
+    }
+
+    function readExcelFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+                const headers = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { header: 1 })[0];
+                callback(excelRows, headers);
+            } catch (error) {
+                alert('Fehler beim Einlesen der Excel-Datei: ' + error.message);
+            }
+        };
+        reader.onerror = () => {
+            alert('Fehler beim Lesen der Datei.');
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function readCSVFile(file, delimiter, callback) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const csvData = event.target.result;
+                const lines = csvData.split('\n').filter(line => line.trim() !== '');
+                const headers = lines[0].split(delimiter).map(header => header.trim());
+                const data = lines.slice(1).map(line => {
+                    const values = line.split(delimiter).map(value => value.trim());
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = values[index] || '';
+                    });
+                    return obj;
+                });
+                callback(data, headers);
+            } catch (error) {
+                alert('Fehler beim Einlesen der CSV-Datei: ' + error.message);
+            }
+        };
+        reader.onerror = () => {
+            alert('Fehler beim Lesen der Datei.');
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function createMappingOptions() {
+        const container = document.getElementById('spaltenzuordnung');
+        container.innerHTML = '<h2>Spaltenzuordnung</h2>';
+
+        if (basisSpaltenNamen.length === 0 || vergleichSpaltenNamen.length === 0) {
+            container.innerHTML += '<p>Keine Spaltennamen gefunden. Stellen Sie sicher, dass die Dateien korrekt formatiert sind.</p>';
+            return;
+        }
+
+        basisSpaltenNamen.forEach((basisSpalte) => {
+            const div = document.createElement('div');
+
+            // Label für die Basis-Spalte
+            const basisLabel = document.createElement('label');
+            basisLabel.textContent = basisSpalte;
+            basisLabel.style.marginRight = '10px';
+
+            // Dropdown für die Vergleichs-Spalte
+            const select = document.createElement('select');
+            select.name = 'mapping';
+            select.dataset.basisSpalte = basisSpalte;
+
+            // Option für keine Zuordnung
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '-- wählen --';
+            select.appendChild(defaultOption);
+
+            vergleichSpaltenNamen.forEach(vergleichSpalte => {
+                const option = document.createElement('option');
+                option.value = vergleichSpalte;
+                option.textContent = vergleichSpalte;
+                select.appendChild(option);
+            });
+
+            div.appendChild(basisLabel);
+            div.appendChild(select);
+            container.appendChild(div);
+        });
+    }
+
+    document.getElementById('compareButton').addEventListener('click', vergleichen);
+
+    function vergleichen() {
+        if (!basisData || !vergleichData) {
+            alert('Bitte laden Sie beide Dateien hoch.');
+            return;
+        }
+
+        // Spaltenzuordnung sammeln
+        const mappings = Array.from(document.querySelectorAll('select[name="mapping"]'))
+            .map(select => {
+                return {
+                    basisSpalte: select.dataset.basisSpalte,
+                    vergleichSpalte: select.value
+                };
+            })
+            .filter(mapping => mapping.vergleichSpalte !== '');
+
+        if (mappings.length === 0) {
+            alert('Bitte ordnen Sie mindestens eine Spalte zu.');
+            return;
+        }
+
+        // Überprüfen, ob die zugeordneten Spalten existieren
+        for (let mapping of mappings) {
+            if (!basisSpaltenNamen.includes(mapping.basisSpalte)) {
+                alert(`Die Spalte "${mapping.basisSpalte}" ist in der Basis-Datei nicht vorhanden.`);
+                return;
+            }
+            if (!vergleichSpaltenNamen.includes(mapping.vergleichSpalte)) {
+                alert(`Die Spalte "${mapping.vergleichSpalte}" ist in der Vergleichs-Datei nicht vorhanden.`);
+                return;
+            }
+        }
+
+        try {
+            // Vergleichs-Keys erstellen
+            const vergleichSet = new Set(vergleichData.map(item => {
+                return mappings.map(mapping => String(item[mapping.vergleichSpalte] || '').toLowerCase().trim()).join('|');
+            }));
+
+            // Basisdaten filtern
+            const ergebnis = basisData.filter(item => {
+                const key = mappings.map(mapping => String(item[mapping.basisSpalte] || '').toLowerCase().trim()).join('|');
+                return vergleichSet.has(key);
+            });
+
+            anzeigenErgebnis(ergebnis);
+        } catch (error) {
+            alert('Fehler beim Vergleich der Daten: ' + error.message);
+        }
+    }
+
+    function anzeigenErgebnis(ergebnis) {
+        const ergebnisDiv = document.getElementById('ergebnis');
+        ergebnisDiv.innerHTML = '';
+
+        if (ergebnis.length === 0) {
+            ergebnisDiv.textContent = 'Keine übereinstimmenden Einträge gefunden.';
+            return;
+        }
+
+        const table = document.createElement('table');
+        const headerRow = document.createElement('tr');
+
+        // Tabellenüberschriften hinzufügen
+        basisSpaltenNamen.forEach(spalte => {
+            const th = document.createElement('th');
+            th.textContent = spalte;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Datenzeilen hinzufügen
+        ergebnis.forEach(item => {
+            const row = document.createElement('tr');
+            basisSpaltenNamen.forEach(spalte => {
+                const td = document.createElement('td');
+                td.textContent = item[spalte];
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
+
+        ergebnisDiv.appendChild(table);
+    }
+</script>
+
+</body>
+</html>
