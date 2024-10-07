@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1200px; /* Increase width for better display */
             margin: 0 auto;
             padding: 20px;
             background-color: #fff;
@@ -59,14 +59,23 @@
             min-width: 250px;
         }
 
-        #columnMapping div {
-            margin-bottom: 10px;
+        #columnMappingTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto;
         }
 
-        #columnMapping label {
-            display: inline-block;
-            width: 150px;
-            margin-right: 10px;
+        #columnMappingTable th, #columnMappingTable td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        #columnMappingTable th {
+            background-color: #007BFF;
+            color: #fff;
         }
 
         #compareButton {
@@ -115,9 +124,8 @@
                 flex-direction: column;
             }
 
-            #columnMapping label {
+            #columnMappingTable th, #columnMappingTable td {
                 width: 100%;
-                margin-bottom: 5px;
             }
         }
     </style>
@@ -149,17 +157,28 @@
         <div class="file-inputs">
             <div class="file-input">
                 <label for="baseFile">Upload base file:</label>
-                <input type="file" id="baseFile" accept=".xlsx, .csv" />
+                <input type="file" id="baseFile" accept=".xlsx" />
             </div>
             <div class="file-input">
                 <label for="compareFile">Upload comparison file:</label>
-                <input type="file" id="compareFile" accept=".xlsx, .csv" />
+                <input type="file" id="compareFile" accept=".xlsx" />
             </div>
         </div>
     </div>
 
     <div id="columnMapping" class="section">
-        <!-- Column mapping will be inserted here -->
+        <h2>Column Mapping</h2>
+        <table id="columnMappingTable">
+            <thead>
+            <tr>
+                <th>Base File Column</th>
+                <th>Comparison File Column</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Mapping rows will be inserted here -->
+            </tbody>
+        </table>
     </div>
 
     <div class="section">
@@ -175,15 +194,21 @@
     let baseData, compareData;
     let baseColumnNames = [];
     let compareColumnNames = [];
-    let baseFileType, compareFileType;
 
     document.getElementById('fileType').addEventListener('change', (e) => {
         const fileType = e.target.value;
         const delimiterDiv = document.getElementById('delimiterDiv');
+        const baseFileInput = document.getElementById('baseFile');
+        const compareFileInput = document.getElementById('compareFile');
+
         if (fileType === 'csv') {
             delimiterDiv.style.display = 'block';
+            baseFileInput.accept = '.csv';
+            compareFileInput.accept = '.csv';
         } else {
             delimiterDiv.style.display = 'none';
+            baseFileInput.accept = '.xlsx';
+            compareFileInput.accept = '.xlsx';
         }
     });
 
@@ -193,7 +218,6 @@
             return;
         }
         const baseFile = e.target.files[0];
-        baseFileType = baseFile.name.split('.').pop().toLowerCase();
         readFile(baseFile, true, (data, headers) => {
             baseData = data;
             baseColumnNames = headers;
@@ -209,7 +233,6 @@
             return;
         }
         const compareFile = e.target.files[0];
-        compareFileType = compareFile.name.split('.').pop().toLowerCase();
         readFile(compareFile, false, (data, headers) => {
             compareData = data;
             compareColumnNames = headers;
@@ -280,23 +303,22 @@
     }
 
     function createMappingOptions() {
-        const container = document.getElementById('columnMapping');
-        container.innerHTML = '<h2>Column Mapping</h2>';
+        const tableBody = document.querySelector('#columnMappingTable tbody');
+        tableBody.innerHTML = '';
 
         if (baseColumnNames.length === 0 || compareColumnNames.length === 0) {
-            container.innerHTML += '<p>No column names found. Ensure that the files are correctly formatted.</p>';
+            tableBody.innerHTML += '<tr><td colspan="2">No column names found. Ensure that the files are correctly formatted.</td></tr>';
             return;
         }
 
         baseColumnNames.forEach((baseColumn) => {
-            const div = document.createElement('div');
+            const row = document.createElement('tr');
 
-            // Label for the base column
-            const baseLabel = document.createElement('label');
-            baseLabel.textContent = baseColumn;
-            baseLabel.style.marginRight = '10px';
+            // Base column cell
+            const baseCell = document.createElement('td');
+            baseCell.textContent = baseColumn;
 
-            // Dropdown for the comparison column
+            // Dropdown for comparison column
             const select = document.createElement('select');
             select.name = 'mapping';
             select.dataset.baseColumn = baseColumn;
@@ -314,9 +336,13 @@
                 select.appendChild(option);
             });
 
-            div.appendChild(baseLabel);
-            div.appendChild(select);
-            container.appendChild(div);
+            // Comparison column cell
+            const compareCell = document.createElement('td');
+            compareCell.appendChild(select);
+
+            row.appendChild(baseCell);
+            row.appendChild(compareCell);
+            tableBody.appendChild(row);
         });
     }
 
@@ -325,12 +351,6 @@
     function compare() {
         if (!baseData || !compareData) {
             alert('Please upload both files.');
-            return;
-        }
-
-        // Check if file types are the same
-        if (baseFileType !== compareFileType) {
-            alert('The file types must match. Please upload either two Excel files or two CSV files.');
             return;
         }
 
