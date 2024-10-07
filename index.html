@@ -73,11 +73,6 @@
             white-space: nowrap;
         }
 
-        #columnMappingTable th {
-            background-color: #007BFF;
-            color: #fff;
-        }
-
         #compareButton {
             padding: 10px 20px;
             font-size: 16px;
@@ -158,10 +153,12 @@
             <div class="file-input">
                 <label for="baseFile">Upload base file:</label>
                 <input type="file" id="baseFile" accept=".xlsx" />
+                <p id="baseFileInfo"></p>
             </div>
             <div class="file-input">
                 <label for="compareFile">Upload comparison file:</label>
                 <input type="file" id="compareFile" accept=".xlsx" />
+                <p id="compareFileInfo"></p>
             </div>
         </div>
     </div>
@@ -221,6 +218,7 @@
         readFile(baseFile, true, (data, headers) => {
             baseData = data;
             baseColumnNames = headers;
+            document.getElementById('baseFileInfo').textContent = `Number of rows: ${baseData.length}`;
             if (compareColumnNames.length > 0) {
                 createMappingOptions();
             }
@@ -236,6 +234,7 @@
         readFile(compareFile, false, (data, headers) => {
             compareData = data;
             compareColumnNames = headers;
+            document.getElementById('compareFileInfo').textContent = `Number of rows: ${compareData.length}`;
             if (baseColumnNames.length > 0) {
                 createMappingOptions();
             }
