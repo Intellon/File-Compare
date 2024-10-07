@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Excel- und CSV-Dateien vergleichen</title>
+    <title>Compare Excel and CSV Files</title>
+    <!-- Include the SheetJS library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
+        /* General Styling */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -57,11 +59,11 @@
             min-width: 250px;
         }
 
-        #spaltenzuordnung div {
+        #columnMapping div {
             margin-bottom: 10px;
         }
 
-        #spaltenzuordnung label {
+        #columnMapping label {
             display: inline-block;
             width: 150px;
             margin-right: 10px;
@@ -80,7 +82,7 @@
             background-color: #0056b3;
         }
 
-        #ergebnis {
+        #result {
             overflow-x: auto;
         }
 
@@ -88,12 +90,14 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            table-layout: auto;
         }
 
         th, td {
             text-align: left;
             padding: 10px;
             border: 1px solid #ddd;
+            white-space: nowrap;
         }
 
         th {
@@ -111,7 +115,7 @@
                 flex-direction: column;
             }
 
-            #spaltenzuordnung label {
+            #columnMapping label {
                 width: 100%;
                 margin-bottom: 5px;
             }
@@ -121,52 +125,57 @@
 <body>
 
 <div class="container">
-    <h1>Excel- und CSV-Dateien vergleichen</h1>
+    <h1>Compare Excel and CSV Files</h1>
 
     <div class="section">
-        <h2>Dateityp und Delimiter</h2>
-        <label for="fileType">Dateityp wählen:</label>
+        <h2>File Type and Delimiter</h2>
+        <label for="fileType">Select file type:</label>
         <select id="fileType">
             <option value="excel">Excel (.xlsx)</option>
-            <option value="csv">CSV</option>
+            <option value="csv">CSV (.csv)</option>
         </select>
 
         <div id="delimiterDiv" class="delimiter-settings">
-            <h3>Delimiter einstellen</h3>
-            <label for="basisDelimiter">Delimiter Basis-Datei:</label>
-            <input type="text" id="basisDelimiter" value=";" maxlength="1" />
-            <label for="vergleichDelimiter">Delimiter Vergleichs-Datei:</label>
-            <input type="text" id="vergleichDelimiter" value=";" maxlength="1" />
+            <h3>Set Delimiter</h3>
+            <label for="baseDelimiter">Base file delimiter:</label>
+            <input type="text" id="baseDelimiter" value="," maxlength="1" />
+            <label for="compareDelimiter">Comparison file delimiter:</label>
+            <input type="text" id="compareDelimiter" value="," maxlength="1" />
         </div>
     </div>
 
     <div class="section">
-        <h2>Dateien hochladen</h2>
+        <h2>Upload Files</h2>
         <div class="file-inputs">
             <div class="file-input">
-                <label for="basisFile">Basis-Datei hochladen:</label>
-                <input type="file" id="basisFile" accept=".xlsx, .csv" />
+                <label for="baseFile">Upload base file:</label>
+                <input type="file" id="baseFile" accept=".xlsx, .csv" />
             </div>
             <div class="file-input">
-                <label for="vergleichFile">Vergleichs-Datei hochladen:</label>
-                <input type="file" id="vergleichFile" accept=".xlsx, .csv" />
+                <label for="compareFile">Upload comparison file:</label>
+                <input type="file" id="compareFile" accept=".xlsx, .csv" />
             </div>
         </div>
     </div>
 
-    <div id="spaltenzuordnung" class="section"></div>
-
-    <div class="section">
-        <button id="compareButton">Vergleichen</button>
+    <div id="columnMapping" class="section">
+        <!-- Column mapping will be inserted here -->
     </div>
 
-    <div id="ergebnis" class="section"></div>
+    <div class="section">
+        <button id="compareButton">Compare</button>
+    </div>
+
+    <div id="result" class="section">
+        <!-- Results will be displayed here -->
+    </div>
 </div>
 
 <script>
-    let basisData, vergleichData;
-    let basisSpaltenNamen = [];
-    let vergleichSpaltenNamen = [];
+    let baseData, compareData;
+    let baseColumnNames = [];
+    let compareColumnNames = [];
+    let baseFileType, compareFileType;
 
     document.getElementById('fileType').addEventListener('change', (e) => {
         const fileType = e.target.value;
@@ -178,45 +187,49 @@
         }
     });
 
-    document.getElementById('basisFile').addEventListener('change', (e) => {
+    document.getElementById('baseFile').addEventListener('change', (e) => {
         if (e.target.files.length === 0) {
-            alert('Bitte wählen Sie eine Basis-Datei aus.');
+            alert('Please select a base file.');
             return;
         }
-        readFile(e.target.files[0], true, (data, headers) => {
-            basisData = data;
-            basisSpaltenNamen = headers;
-            if (vergleichSpaltenNamen.length > 0) {
+        const baseFile = e.target.files[0];
+        baseFileType = baseFile.name.split('.').pop().toLowerCase();
+        readFile(baseFile, true, (data, headers) => {
+            baseData = data;
+            baseColumnNames = headers;
+            if (compareColumnNames.length > 0) {
                 createMappingOptions();
             }
         });
     });
 
-    document.getElementById('vergleichFile').addEventListener('change', (e) => {
+    document.getElementById('compareFile').addEventListener('change', (e) => {
         if (e.target.files.length === 0) {
-            alert('Bitte wählen Sie eine Vergleichs-Datei aus.');
+            alert('Please select a comparison file.');
             return;
         }
-        readFile(e.target.files[0], false, (data, headers) => {
-            vergleichData = data;
-            vergleichSpaltenNamen = headers;
-            if (basisSpaltenNamen.length > 0) {
+        const compareFile = e.target.files[0];
+        compareFileType = compareFile.name.split('.').pop().toLowerCase();
+        readFile(compareFile, false, (data, headers) => {
+            compareData = data;
+            compareColumnNames = headers;
+            if (baseColumnNames.length > 0) {
                 createMappingOptions();
             }
         });
     });
 
-    function readFile(file, isBasisDatei, callback) {
+    function readFile(file, isBaseFile, callback) {
         const fileType = document.getElementById('fileType').value;
         if (fileType === 'excel') {
             readExcelFile(file, callback);
         } else if (fileType === 'csv') {
-            const delimiter = isBasisDatei
-                ? document.getElementById('basisDelimiter').value || ';'
-                : document.getElementById('vergleichDelimiter').value || ';';
+            const delimiter = isBaseFile
+                ? document.getElementById('baseDelimiter').value || ','
+                : document.getElementById('compareDelimiter').value || ',';
             readCSVFile(file, delimiter, callback);
         } else {
-            alert('Bitte wählen Sie einen gültigen Dateityp aus.');
+            alert('Please select a valid file type.');
         }
     }
 
@@ -231,11 +244,11 @@
                 const headers = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { header: 1 })[0];
                 callback(excelRows, headers);
             } catch (error) {
-                alert('Fehler beim Einlesen der Excel-Datei: ' + error.message);
+                alert('Error reading the Excel file: ' + error.message);
             }
         };
         reader.onerror = () => {
-            alert('Fehler beim Lesen der Datei.');
+            alert('Error reading the file.');
         };
         reader.readAsArrayBuffer(file);
     }
@@ -257,144 +270,150 @@
                 });
                 callback(data, headers);
             } catch (error) {
-                alert('Fehler beim Einlesen der CSV-Datei: ' + error.message);
+                alert('Error reading the CSV file: ' + error.message);
             }
         };
         reader.onerror = () => {
-            alert('Fehler beim Lesen der Datei.');
+            alert('Error reading the file.');
         };
         reader.readAsText(file, 'UTF-8');
     }
 
     function createMappingOptions() {
-        const container = document.getElementById('spaltenzuordnung');
-        container.innerHTML = '<h2>Spaltenzuordnung</h2>';
+        const container = document.getElementById('columnMapping');
+        container.innerHTML = '<h2>Column Mapping</h2>';
 
-        if (basisSpaltenNamen.length === 0 || vergleichSpaltenNamen.length === 0) {
-            container.innerHTML += '<p>Keine Spaltennamen gefunden. Stellen Sie sicher, dass die Dateien korrekt formatiert sind.</p>';
+        if (baseColumnNames.length === 0 || compareColumnNames.length === 0) {
+            container.innerHTML += '<p>No column names found. Ensure that the files are correctly formatted.</p>';
             return;
         }
 
-        basisSpaltenNamen.forEach((basisSpalte) => {
+        baseColumnNames.forEach((baseColumn) => {
             const div = document.createElement('div');
 
-            // Label für die Basis-Spalte
-            const basisLabel = document.createElement('label');
-            basisLabel.textContent = basisSpalte;
-            basisLabel.style.marginRight = '10px';
+            // Label for the base column
+            const baseLabel = document.createElement('label');
+            baseLabel.textContent = baseColumn;
+            baseLabel.style.marginRight = '10px';
 
-            // Dropdown für die Vergleichs-Spalte
+            // Dropdown for the comparison column
             const select = document.createElement('select');
             select.name = 'mapping';
-            select.dataset.basisSpalte = basisSpalte;
+            select.dataset.baseColumn = baseColumn;
 
-            // Option für keine Zuordnung
+            // Option for no mapping
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
-            defaultOption.textContent = '-- wählen --';
+            defaultOption.textContent = '-- select --';
             select.appendChild(defaultOption);
 
-            vergleichSpaltenNamen.forEach(vergleichSpalte => {
+            compareColumnNames.forEach(compareColumn => {
                 const option = document.createElement('option');
-                option.value = vergleichSpalte;
-                option.textContent = vergleichSpalte;
+                option.value = compareColumn;
+                option.textContent = compareColumn;
                 select.appendChild(option);
             });
 
-            div.appendChild(basisLabel);
+            div.appendChild(baseLabel);
             div.appendChild(select);
             container.appendChild(div);
         });
     }
 
-    document.getElementById('compareButton').addEventListener('click', vergleichen);
+    document.getElementById('compareButton').addEventListener('click', compare);
 
-    function vergleichen() {
-        if (!basisData || !vergleichData) {
-            alert('Bitte laden Sie beide Dateien hoch.');
+    function compare() {
+        if (!baseData || !compareData) {
+            alert('Please upload both files.');
             return;
         }
 
-        // Spaltenzuordnung sammeln
+        // Check if file types are the same
+        if (baseFileType !== compareFileType) {
+            alert('The file types must match. Please upload either two Excel files or two CSV files.');
+            return;
+        }
+
+        // Gather column mappings
         const mappings = Array.from(document.querySelectorAll('select[name="mapping"]'))
             .map(select => {
                 return {
-                    basisSpalte: select.dataset.basisSpalte,
-                    vergleichSpalte: select.value
+                    baseColumn: select.dataset.baseColumn,
+                    compareColumn: select.value
                 };
             })
-            .filter(mapping => mapping.vergleichSpalte !== '');
+            .filter(mapping => mapping.compareColumn !== '');
 
         if (mappings.length === 0) {
-            alert('Bitte ordnen Sie mindestens eine Spalte zu.');
+            alert('Please map at least one column.');
             return;
         }
 
-        // Überprüfen, ob die zugeordneten Spalten existieren
+        // Check if mapped columns exist
         for (let mapping of mappings) {
-            if (!basisSpaltenNamen.includes(mapping.basisSpalte)) {
-                alert(`Die Spalte "${mapping.basisSpalte}" ist in der Basis-Datei nicht vorhanden.`);
+            if (!baseColumnNames.includes(mapping.baseColumn)) {
+                alert(`The column "${mapping.baseColumn}" is not present in the base file.`);
                 return;
             }
-            if (!vergleichSpaltenNamen.includes(mapping.vergleichSpalte)) {
-                alert(`Die Spalte "${mapping.vergleichSpalte}" ist in der Vergleichs-Datei nicht vorhanden.`);
+            if (!compareColumnNames.includes(mapping.compareColumn)) {
+                alert(`The column "${mapping.compareColumn}" is not present in the comparison file.`);
                 return;
             }
         }
 
         try {
-            // Vergleichs-Keys erstellen
-            const vergleichSet = new Set(vergleichData.map(item => {
-                return mappings.map(mapping => String(item[mapping.vergleichSpalte] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
+            // Create comparison keys
+            const compareSet = new Set(compareData.map(item => {
+                return mappings.map(mapping => String(item[mapping.compareColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
             }));
 
-            // Basisdaten filtern
-            const ergebnis = basisData.filter(item => {
-                const key = mappings.map(mapping => String(item[mapping.basisSpalte] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
-                return vergleichSet.has(key);
+            // Filter base data
+            const result = baseData.filter(item => {
+                const key = mappings.map(mapping => String(item[mapping.baseColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
+                return compareSet.has(key);
             });
 
-            anzeigenErgebnis(ergebnis);
+            displayResult(result);
         } catch (error) {
-            alert('Fehler beim Vergleich der Daten: ' + error.message);
+            alert('Error comparing the data: ' + error.message);
         }
     }
 
-    function anzeigenErgebnis(ergebnis) {
-        const ergebnisDiv = document.getElementById('ergebnis');
-        ergebnisDiv.innerHTML = '';
+    function displayResult(result) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
 
-        if (ergebnis.length === 0) {
-            ergebnisDiv.textContent = 'Keine übereinstimmenden Einträge gefunden.';
+        if (result.length === 0) {
+            resultDiv.textContent = 'No matching entries found.';
             return;
         }
 
-        const gesamtanzahl = ergebnis.length;
-        ergebnisDiv.innerHTML = `<p>Gesamtanzahl der Übereinstimmungen: ${gesamtanzahl}</p>`;
+        const totalMatches = result.length;
+        resultDiv.innerHTML = `<p>Total number of matches: ${totalMatches}</p>`;
 
         const table = document.createElement('table');
         const headerRow = document.createElement('tr');
 
-        // Tabellenüberschriften hinzufügen
-        basisSpaltenNamen.forEach(spalte => {
+        // Add table headers
+        baseColumnNames.forEach(column => {
             const th = document.createElement('th');
-            th.textContent = spalte;
+            th.textContent = column;
             headerRow.appendChild(th);
         });
         table.appendChild(headerRow);
 
-        // Datenzeilen hinzufügen
-        ergebnis.forEach(item => {
+        // Add data rows
+        result.forEach(item => {
             const row = document.createElement('tr');
-            basisSpaltenNamen.forEach(spalte => {
+            baseColumnNames.forEach(column => {
                 const td = document.createElement('td');
-                td.textContent = item[spalte];
+                td.textContent = item[column];
                 row.appendChild(td);
             });
             table.appendChild(row);
         });
 
-        ergebnisDiv.appendChild(table);
+        resultDiv.appendChild(table);
     }
 </script>
 
