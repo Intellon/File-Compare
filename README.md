@@ -1,94 +1,96 @@
-# Excel- und CSV-Dateien vergleichen
+# Compare Excel and CSV Files
 
-Eine interaktive Webanwendung zum Vergleichen von Excel- und CSV-Dateien basierend auf ausgewählten Kriterien. Die Anwendung ermöglicht es Ihnen, zwei Dateien hochzuladen, Spalten zuzuordnen (auch wenn die Spalten unterschiedliche Namen haben) und die übereinstimmenden Einträge anzuzeigen.
+An interactive web application for comparing Excel and CSV files based on selected criteria. The application allows you to upload two files, map columns (even if the columns have different names), and display matching entries.
 
-## Funktionen
+## Features
 
-- **Unterstützung von Excel- und CSV-Dateien**: Laden Sie Dateien im `.xlsx`- oder `.csv`-Format hoch.
-- **Delimiter-Auswahl für CSV-Dateien**: Wählen Sie das Trennzeichen für jede CSV-Datei individuell aus.
-- **Spaltenzuordnung**: Ordnen Sie die Spalten der Basisdatei den Spalten der Vergleichsdatei zu, auch wenn sie unterschiedliche Namen haben.
-- **Vergleich mehrerer Kriterien**: Wählen Sie mehrere Spalten für einen präziseren Vergleich aus.
-- **Fehlerbehandlung**: Die Anwendung verfügt über verbesserte Fehlerprüfungen und gibt klare Fehlermeldungen aus.
-- **Responsive Design**: Die Benutzeroberfläche passt sich verschiedenen Bildschirmgrößen an und ist auch auf mobilen Geräten nutzbar.
-- **Ansprechendes Design**: Farben und Styling sorgen für eine übersichtliche und benutzerfreundliche Anwendung.
+- **Support for Excel and CSV Files**: Upload files in `.xlsx` or `.csv` format.
+- **Delimiter Selection for CSV Files**: Choose delimiters for each CSV file individually.
+- **Column Mapping**: Map columns from the base file to columns in the comparison file, even if they have different names.
+- **Comparison of Multiple Criteria**: Select multiple columns for a more precise comparison.
+- **Error Handling**: The application includes enhanced error checks and provides clear error messages.
+- **Responsive Design**: The user interface adapts to different screen sizes, making it usable on mobile devices as well.
+- **User-Friendly Design**: Colors and styling ensure a clear and user-friendly application.
+- **Async File Handling and Lazy Loading**: Uses asynchronous file handling for better performance and lazy loading to efficiently manage large datasets.
 
-## Voraussetzungen
+## Requirements
 
-- **Webbrowser**: Ein moderner Webbrowser wie Chrome, Firefox, Edge oder Safari.
-- **Internetverbindung**: Für das Laden der externen SheetJS-Bibliothek.
+- **Web Browser**: A modern web browser like Chrome, Firefox, Edge, or Safari.
+- **Internet Connection**: Required for loading the external SheetJS library.
 
 ## Installation
 
-1. **Projekt herunterladen**: Klonen Sie das Repository oder laden Sie die Dateien herunter.
-2. **Dateien überprüfen**: Stellen Sie sicher, dass die folgenden Dateien vorhanden sind:
-   - `index.html` (enthält HTML, CSS und JavaScript)
-   - `README.md`
-   - `.gitignore`
-   - `assets/data`
+1. **Download Project**: Clone the repository or download the files.
+2. **Verify Files**: Make sure the following files are present:
+    - `index.html` (contains HTML, CSS, and JavaScript)
+    - `README.md`
+    - `.gitignore`
+    - `assets/data`
 
-## Verwendung
+## Usage
 
-1. **Anwendung starten**:
-   - Öffnen Sie die `index.html`-Datei in Ihrem Webbrowser. Sie können dies tun, indem Sie einen Doppelklick auf die Datei ausführen oder sie in den Browser ziehen.
-2. **Dateityp auswählen**:
-   - Wählen Sie oben auf der Seite den gewünschten Dateityp aus (Excel oder CSV).
-3. **Delimiter festlegen (nur für CSV)**:
-   - Wenn Sie CSV-Dateien verwenden, geben Sie die entsprechenden Trennzeichen für die Basisdatei und die Vergleichsdatei ein.
-4. **Dateien hochladen**:
-   - Klicken Sie auf "Basis-Datei hochladen" und wählen Sie Ihre erste Datei aus.
-   - Klicken Sie auf "Vergleichs-Datei hochladen" und wählen Sie Ihre zweite Datei aus.
-5. **Spaltenzuordnung vornehmen**:
-   - Nachdem beide Dateien geladen wurden, erscheint der Bereich "Spaltenzuordnung".
-   - Ordnen Sie die Spalten der Basisdatei den entsprechenden Spalten der Vergleichsdatei zu, indem Sie aus den Dropdown-Menüs wählen.
-6. **Vergleich durchführen**:
-   - Klicken Sie auf den Button "Vergleichen", um den Vergleich zu starten.
-7. **Ergebnisse ansehen**:
-   - Die übereinstimmenden Einträge werden in einer Tabelle unterhalb des Buttons angezeigt.
-   - Wenn keine Übereinstimmungen gefunden wurden, erhalten Sie eine entsprechende Meldung.
+1. **Start the Application**:
+    - Open the `index.html` file in your web browser. You can do this by double-clicking on the file or dragging it into the browser.
+2. **Select File Type**:
+    - Choose the desired file type (Excel or CSV) at the top of the page.
+3. **Set Delimiter (for CSV only)**:
+    - If you are using CSV files, enter the appropriate delimiters for the base file and the comparison file.
+4. **Upload Files**:
+    - Click on "Upload Base File" and select your first file.
+    - Click on "Upload Comparison File" and select your second file.
+5. **Map Columns**:
+    - After both files are loaded, the "Column Mapping" section will appear.
+    - Map columns from the base file to the corresponding columns in the comparison file using the dropdown menus.
+6. **Run the Comparison**:
+    - Click the "Compare" button to start the comparison.
+7. **View Results**:
+    - The matching entries will be displayed in a table below the button.
+    - If no matches are found, an appropriate message will be shown.
 
-## Beispiel
+## Example
 
-Angenommen, Sie haben zwei Dateien mit Kundendaten, aber die Spalten haben unterschiedliche Namen:
+Suppose you have two files with customer data, but the columns have different names:
 
-- **Basisdatei (basis.xlsx oder basis.csv)**:
-  - Kundennummer
-  - Vorname
-  - Alter
-  - Ort
+- **Base File (base.xlsx or base.csv)**:
+    - Customer Number
+    - First Name
+    - Age
+    - City
 
-- **Vergleichsdatei (vergleich.xlsx oder vergleich.csv)**:
-  - ID
-  - Name
-  - Jahre
-  - Stadt
+- **Comparison File (compare.xlsx or compare.csv)**:
+    - ID
+    - Name
+    - Years
+    - Town
 
-### Spaltenzuordnung:
+### Column Mapping:
 
-- Vorname (Basisdatei) zu Name (Vergleichsdatei)
-- Ort (Basisdatei) zu Stadt (Vergleichsdatei)
+- First Name (Base File) to Name (Comparison File)
+- City (Base File) to Town (Comparison File)
 
-### Vergleichskriterien:
+### Comparison Criteria:
 
-- Wählen Sie die Spalten Vorname und Ort als Kriterien aus.
+- Select the columns First Name and City as criteria.
 
-### Ergebnis:
+### Result:
 
-- Der Eintrag von Clara aus Hamburg wird als übereinstimmend erkannt und angezeigt.
+- The entry for Clara from Hamburg will be recognized as matching and displayed.
 
-### Fehlerbehandlung
+### Error Handling
 
-- **Ungültige Dateien**: Die Anwendung prüft, ob gültige Dateien hochgeladen wurden, und gibt Fehlermeldungen aus, wenn dies nicht der Fall ist.
-- **Fehlende Spalten**: Wenn die zugeordneten Spalten in einer der Dateien nicht vorhanden sind, erhalten Sie eine entsprechende Meldung.
-- **Allgemeine Fehler**: Unerwartete Fehler beim Einlesen oder Verarbeiten der Daten werden abgefangen und als Meldung ausgegeben.
-- **Datentypen**: Die Anwendung konvertiert Werte in Strings, um sicherzustellen, dass Methoden wie `.toLowerCase()` funktionieren. Wenn Sie dennoch Probleme haben, überprüfen Sie Ihre Daten auf ungewöhnliche Formate oder Werte.
+- **Invalid Files**: The application checks if valid files are uploaded and provides error messages if not.
+- **Missing Columns**: If the mapped columns are missing in either of the files, a corresponding message is displayed.
+- **General Errors**: Unexpected errors during reading or processing data are caught and shown as messages.
+- **Data Types**: The application converts values to strings to ensure methods like `.toLowerCase()` work properly. If you encounter problems, check your data for unusual formats or values.
+- **Character Normalization**: Special characters such as underscores (`_`), single quotes (`'`), and double quotes (`"`) are stripped from values to ensure a more precise and consistent comparison.
 
-### Bekannte Probleme
+### Known Challenges
 
-- **Große Dateien**: Bei sehr großen Dateien kann die Verarbeitung Zeit in Anspruch nehmen und die Anwendung könnte langsamer reagieren.
-- **Browser-Kompatibilität**: Die Anwendung wurde mit modernen Browsern getestet. Bei älteren Browsern könnten Einschränkungen auftreten.
-- **Dateien mit speziellen Zeichen**: Stellen Sie sicher, dass Ihre Dateien UTF-8-kodiert sind, um Probleme mit Sonderzeichen zu vermeiden.
-- **Unterschiedliche Delimiter**: Die Anwendung unterstützt unterschiedliche Delimiter für Basis- und Vergleichsdatei, aber stellen Sie sicher, dass diese korrekt eingegeben werden.
+- **Large Files**: For very large files, processing may take some time, and the application may respond more slowly.
+- **Browser Compatibility**: The application has been tested with modern browsers. Limitations may occur with older browsers.
+- **Files with Special Characters**: Ensure your files are UTF-8 encoded to avoid issues with special characters.
+- **Different Delimiters**: The application supports different delimiters for the base and comparison file, but make sure they are entered correctly.
 
-### Lizenz
+### License
 
-Dieses Projekt ist unter der MIT-Lizenz lizenziert. Weitere Informationen finden Sie in der `LICENSE` Datei.
+This project is licensed under the MIT License. For more details, see the `LICENSE` file.

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compare Excel and CSV Files</title>
+    <!-- Include the SheetJS library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px; /* Increase width for better display */
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        h1, h2, h3 {
+            color: #333;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .label, label {
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+        }
+
+        input[type="text"], select, input[type="file"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+
+        .delimiter-settings {
+            display: none;
+        }
+
+        .file-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .file-input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        #columnMappingTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto;
+        }
+
+        #columnMappingTable th, #columnMappingTable td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        #compareButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        #compareButton:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .file-inputs {
+                flex-direction: column;
+            }
+
+            #columnMappingTable th, #columnMappingTable td {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Compare Excel and CSV Files</h1>
+
+    <div class="section">
+        <h2>File Type and Delimiter</h2>
+        <label for="fileType">Select file type:</label>
+        <select id="fileType">
+            <option value="excel">Excel (.xlsx)</option>
+            <option value="csv">CSV (.csv)</option>
+        </select>
+
+        <div id="delimiterDiv" class="delimiter-settings">
+            <h3>Set Delimiter</h3>
+            <label for="baseDelimiter">Base file delimiter:</label>
+            <input type="text" id="baseDelimiter" value="," maxlength="1" />
+            <label for="compareDelimiter">Comparison file delimiter:</label>
+            <input type="text" id="compareDelimiter" value="," maxlength="1" />
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Upload Files</h2>
+        <div class="file-inputs">
+            <div class="file-input">
+                <label for="baseFile">Upload base file:</label>
+                <input type="file" id="baseFile" accept=".xlsx" />
+                <p id="baseFileInfo"></p>
+            </div>
+            <div class="file-input">
+                <label for="compareFile">Upload comparison file:</label>
+                <input type="file" id="compareFile" accept=".xlsx" />
+                <p id="compareFileInfo"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="columnMapping" class="section">
+        <h2>Column Mapping</h2>
+        <table id="columnMappingTable">
+            <thead>
+            <tr>
+                <th>Base File Column</th>
+                <th>Comparison File Column</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Mapping rows will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <button id="compareButton">Compare</button>
+    </div>
+
+    <div id="result" class="section">
+        <!-- Results will be displayed here -->
+    </div>
+</div>
+
+<script>
+    let baseData, compareData;
+    let baseColumnNames = [];
+    let compareColumnNames = [];
+
+    document.getElementById('fileType').addEventListener('change', (e) => {
+        const fileType = e.target.value;
+        const delimiterDiv = document.getElementById('delimiterDiv');
+        const baseFileInput = document.getElementById('baseFile');
+        const compareFileInput = document.getElementById('compareFile');
+
+        if (fileType === 'csv') {
+            delimiterDiv.style.display = 'block';
+            baseFileInput.accept = '.csv';
+            compareFileInput.accept = '.csv';
+        } else {
+            delimiterDiv.style.display = 'none';
+            baseFileInput.accept = '.xlsx';
+            compareFileInput.accept = '.xlsx';
+        }
+    });
+
+    document.getElementById('baseFile').addEventListener('change', (e) => {
+        if (e.target.files.length === 0) {
+            alert('Please select a base file.');
+            return;
+        }
+        const baseFile = e.target.files[0];
+        readFile(baseFile, true, (data, headers) => {
+            baseData = data;
+            baseColumnNames = headers;
+            document.getElementById('baseFileInfo').textContent = `Number of rows: ${baseData.length}`;
+            if (compareColumnNames.length > 0) {
+                createMappingOptions();
+            }
+        });
+    });
+
+    document.getElementById('compareFile').addEventListener('change', (e) => {
+        if (e.target.files.length === 0) {
+            alert('Please select a comparison file.');
+            return;
+        }
+        const compareFile = e.target.files[0];
+        readFile(compareFile, false, (data, headers) => {
+            compareData = data;
+            compareColumnNames = headers;
+            document.getElementById('compareFileInfo').textContent = `Number of rows: ${compareData.length}`;
+            if (baseColumnNames.length > 0) {
+                createMappingOptions();
+            }
+        });
+    });
+
+    function readFile(file, isBaseFile, callback) {
+        const fileType = document.getElementById('fileType').value;
+        if (fileType === 'excel') {
+            readExcelFile(file, callback);
+        } else if (fileType === 'csv') {
+            const delimiter = isBaseFile
+                ? document.getElementById('baseDelimiter').value || ','
+                : document.getElementById('compareDelimiter').value || ',';
+            readCSVFile(file, delimiter, callback);
+        } else {
+            alert('Please select a valid file type.');
+        }
+    }
+
+    function readExcelFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.SheetNames[0];
+                const excelRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { defval: '' });
+                const headers = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], { header: 1 })[0];
+                callback(excelRows, headers);
+            } catch (error) {
+                alert('Error reading the Excel file: ' + error.message);
+            }
+        };
+        reader.onerror = () => {
+            alert('Error reading the file.');
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function readCSVFile(file, delimiter, callback) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            try {
+                const csvData = event.target.result;
+                const lines = csvData.split('\n').filter(line => line.trim() !== '');
+                const headers = lines[0].split(delimiter).map(header => header.replace(/['"]+/g, '').trim());
+                const data = lines.slice(1).map(line => {
+                    const values = line.split(delimiter).map(value => value.replace(/['"]+/g, '').trim());
+                    const obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = values[index] || '';
+                    });
+                    return obj;
+                });
+                callback(data, headers);
+            } catch (error) {
+                alert('Error reading the CSV file: ' + error.message);
+            }
+        };
+        reader.onerror = () => {
+            alert('Error reading the file.');
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function createMappingOptions() {
+        const tableBody = document.querySelector('#columnMappingTable tbody');
+        tableBody.innerHTML = '';
+
+        if (baseColumnNames.length === 0 || compareColumnNames.length === 0) {
+            tableBody.innerHTML += '<tr><td colspan="2">No column names found. Ensure that the files are correctly formatted.</td></tr>';
+            return;
+        }
+
+        baseColumnNames.forEach((baseColumn) => {
+            const row = document.createElement('tr');
+
+            // Base column cell
+            const baseCell = document.createElement('td');
+            baseCell.textContent = baseColumn;
+
+            // Dropdown for comparison column
+            const select = document.createElement('select');
+            select.name = 'mapping';
+            select.dataset.baseColumn = baseColumn;
+
+            // Option for no mapping
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = '-- select --';
+            select.appendChild(defaultOption);
+
+            compareColumnNames.forEach(compareColumn => {
+                const option = document.createElement('option');
+                option.value = compareColumn;
+                option.textContent = compareColumn;
+                select.appendChild(option);
+            });
+
+            // Comparison column cell
+            const compareCell = document.createElement('td');
+            compareCell.appendChild(select);
+
+            row.appendChild(baseCell);
+            row.appendChild(compareCell);
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.getElementById('compareButton').addEventListener('click', compare);
+
+    function compare() {
+        if (!baseData || !compareData) {
+            alert('Please upload both files.');
+            return;
+        }
+
+        // Gather column mappings
+        const mappings = Array.from(document.querySelectorAll('select[name="mapping"]'))
+            .map(select => {
+                return {
+                    baseColumn: select.dataset.baseColumn,
+                    compareColumn: select.value
+                };
+            })
+            .filter(mapping => mapping.compareColumn !== '');
+
+        if (mappings.length === 0) {
+            alert('Please map at least one column.');
+            return;
+        }
+
+        // Check if mapped columns exist
+        for (let mapping of mappings) {
+            if (!baseColumnNames.includes(mapping.baseColumn)) {
+                alert(`The column "${mapping.baseColumn}" is not present in the base file.`);
+                return;
+            }
+            if (!compareColumnNames.includes(mapping.compareColumn)) {
+                alert(`The column "${mapping.compareColumn}" is not present in the comparison file.`);
+                return;
+            }
+        }
+
+        try {
+            // Create comparison keys
+            const compareSet = new Set(compareData.map(item => {
+                return mappings.map(mapping => String(item[mapping.compareColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
+            }));
+
+            // Filter base data
+            const result = baseData.filter(item => {
+                const key = mappings.map(mapping => String(item[mapping.baseColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
+                return compareSet.has(key);
+            });
+
+            displayResult(result);
+        } catch (error) {
+            alert('Error comparing the data: ' + error.message);
+        }
+    }
+
+    function displayResult(result) {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
+
+        if (result.length === 0) {
+            resultDiv.textContent = 'No matching entries found.';
+            return;
+        }
+
+        const totalMatches = result.length;
+        resultDiv.innerHTML = `<p>Total number of matches: ${totalMatches}</p>`;
+
+        const table = document.createElement('table');
+        const headerRow = document.createElement('tr');
+
+        // Add table headers
+        baseColumnNames.forEach(column => {
+            const th = document.createElement('th');
+            th.textContent = column;
+            headerRow.appendChild(th);
+        });
+        table.appendChild(headerRow);
+
+        // Add data rows
+        result.forEach(item => {
+            const row = document.createElement('tr');
+            baseColumnNames.forEach(column => {
+                const td = document.createElement('td');
+                td.textContent = item[column];
+                row.appendChild(td);
+            });
+            table.appendChild(row);
+        });
+
+        resultDiv.appendChild(table);
+    }
+</script>
+
+</body>
+</html>
