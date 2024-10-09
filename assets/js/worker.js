@@ -2,23 +2,26 @@ self.onmessage = function(e) {
     try {
         console.log('Worker received data:', e.data);
 
-        // Daten validieren
         if (!e.data) {
-            throw new Error('No data received in worker.');
+            console.error('No data received in worker.');
+            return;
         }
 
         const { baseData, compareData, mappings } = e.data;
 
         if (!baseData || !Array.isArray(baseData)) {
-            throw new Error('Invalid baseData received. Expected an array.');
+            console.error('Invalid baseData received. Expected an array.');
+            return;
         }
 
         if (!compareData || !Array.isArray(compareData)) {
-            throw new Error('Invalid compareData received. Expected an array.');
+            console.error('Invalid compareData received. Expected an array.');
+            return;
         }
 
         if (!mappings || !Array.isArray(mappings) || mappings.length === 0) {
-            throw new Error('Mappings data is invalid or empty.');
+            console.error('Mappings data is invalid or empty.');
+            return;
         }
 
         console.log('Data validated successfully');
