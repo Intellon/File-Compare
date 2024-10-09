@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Compare Excel and CSV Files</title>
-    <!-- Include the SheetJS library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     <style>
-        /* General Styling */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -15,7 +13,7 @@
         }
 
         .container {
-            max-width: 1200px; /* Increase width for better display */
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #fff;
@@ -113,7 +111,6 @@
             background-color: #f9f9f9;
         }
 
-        /* Responsive Design */
         @media (max-width: 600px) {
             .file-inputs {
                 flex-direction: column;
@@ -313,16 +310,13 @@
         baseColumnNames.forEach((baseColumn) => {
             const row = document.createElement('tr');
 
-            // Base column cell
             const baseCell = document.createElement('td');
             baseCell.textContent = baseColumn;
 
-            // Dropdown for comparison column
             const select = document.createElement('select');
             select.name = 'mapping';
             select.dataset.baseColumn = baseColumn;
 
-            // Option for no mapping
             const defaultOption = document.createElement('option');
             defaultOption.value = '';
             defaultOption.textContent = '-- select --';
@@ -335,7 +329,6 @@
                 select.appendChild(option);
             });
 
-            // Comparison column cell
             const compareCell = document.createElement('td');
             compareCell.appendChild(select);
 
@@ -353,7 +346,6 @@
             return;
         }
 
-        // Gather column mappings
         const mappings = Array.from(document.querySelectorAll('select[name="mapping"]'))
             .map(select => {
                 return {
@@ -368,7 +360,6 @@
             return;
         }
 
-        // Check if mapped columns exist
         for (let mapping of mappings) {
             if (!baseColumnNames.includes(mapping.baseColumn)) {
                 alert(`The column "${mapping.baseColumn}" is not present in the base file.`);
@@ -381,12 +372,10 @@
         }
 
         try {
-            // Create comparison keys
             const compareSet = new Set(compareData.map(item => {
                 return mappings.map(mapping => String(item[mapping.compareColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
             }));
 
-            // Filter base data
             const result = baseData.filter(item => {
                 const key = mappings.map(mapping => String(item[mapping.baseColumn] || '').toLowerCase().replace(/['"]+/g, '').trim()).join('|');
                 return compareSet.has(key);
@@ -413,7 +402,6 @@
         const table = document.createElement('table');
         const headerRow = document.createElement('tr');
 
-        // Add table headers
         baseColumnNames.forEach(column => {
             const th = document.createElement('th');
             th.textContent = column;
@@ -421,7 +409,6 @@
         });
         table.appendChild(headerRow);
 
-        // Add data rows
         result.forEach(item => {
             const row = document.createElement('tr');
             baseColumnNames.forEach(column => {

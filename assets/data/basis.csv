@@ -1,5 +1,11 @@
-ï»¿"Kundennummer";"Vorname";"Alter";"Ort"
-"1";"Anna";"25";"Berlin"
-"2";"Ben";"30";"MÃ¼nchen"
-"3";"Clara";"28";"Hamburg"
-"4";"Clara";"21";"Frankfurt"
+Customer Number,First Name,Age,City
+1,Anna,25,Berlin
+2,Ben,30,MŸnchen
+3,Clara,28,Hamburg
+4,Daniel,35,Kšln
+5,Eva,22,Frankfurt
+6,Felix,29,Stuttgart
+7,Greta,27,DŸsseldorf
+8,Hans,31,Leipzig
+9,Iris,26,Leipzig
+10,Jonas,33,Dresden

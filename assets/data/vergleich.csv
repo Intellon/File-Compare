@@ -1,6 +1,11 @@
-﻿"ID","Name","Jahre","Stadt"
-"101","Clara","28","Hamburg"
-"102","Eva","22","Frankfurt"
-"103","Sophia","25","Berlin"
-"104","Franz","55","München"
-"105","Ben","45","Dresden"
+﻿ID,Name,Years,Town
+3,Clara,29,Hamburg
+5,Eva,22,Frankfurt
+8,Hans,31,Leipzig
+11,Karl,34,Nürnberg
+12,Lisa,24,Hannover
+13,Max,29,Augsburg
+14,Nora,27,Mainz
+15,Otto,32,Freiburg
+16,Petra,23,Kiel
+17,Quintin,36,Erfurt

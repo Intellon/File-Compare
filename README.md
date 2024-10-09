@@ -22,10 +22,11 @@ An interactive web application for comparing Excel and CSV files based on select
 
 1. **Download Project**: Clone the repository or download the files.
 2. **Verify Files**: Make sure the following files are present:
-    - `index.html` (contains HTML, CSS, and JavaScript)
+    - `index.html` (main application file) 
+    - `assets` folder (contains data files and libraries)
     - `README.md`
     - `.gitignore`
-    - `assets/data`
+    - `LICENSE`
 
 ## Usage
 
@@ -74,7 +75,7 @@ Suppose you have two files with customer data, but the columns have different na
 
 ### Result:
 
-- The entry for Clara from Hamburg will be recognized as matching and displayed.
+- The entry for Clara from Hamburg, Eva from Frankfurt and Hans from Leipzig will be recognized as matching and displayed.
 
 ## Error Handling
 
