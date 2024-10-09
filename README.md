@@ -76,7 +76,7 @@ Suppose you have two files with customer data, but the columns have different na
 
 - The entry for Clara from Hamburg will be recognized as matching and displayed.
 
-### Error Handling
+## Error Handling
 
 - **Invalid Files**: The application checks if valid files are uploaded and provides error messages if not.
 - **Missing Columns**: If the mapped columns are missing in either of the files, a corresponding message is displayed.
@@ -84,13 +84,13 @@ Suppose you have two files with customer data, but the columns have different na
 - **Data Types**: The application converts values to strings to ensure methods like `.toLowerCase()` work properly. If you encounter problems, check your data for unusual formats or values.
 - **Character Normalization**: Special characters such as underscores (`_`), single quotes (`'`), and double quotes (`"`) are stripped from values to ensure a more precise and consistent comparison.
 
-### Known Challenges
+## Known Challenges
 
 - **Large Files**: For very large files, processing may take some time, and the application may respond more slowly.
 - **Browser Compatibility**: The application has been tested with modern browsers. Limitations may occur with older browsers.
 - **Files with Special Characters**: Ensure your files are UTF-8 encoded to avoid issues with special characters.
 - **Different Delimiters**: The application supports different delimiters for the base and comparison file, but make sure they are entered correctly.
 
-### License
+## License
 
 This project is licensed under the MIT License. For more details, see the `LICENSE` file.

@@ -50,7 +50,7 @@ self.onmessage = function(e) {
 
         self.postMessage(result);
     } catch (error) {
-        console.error('Worker error caught:', error); // Protokolliert den Fehler detailliert im Worker
-        self.postMessage({ error: error.message }); // Fehler zurückgeben
+        console.error('Worker error caught:', error);
+        self.postMessage({ error: error.message });
     }
 };

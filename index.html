@@ -65,6 +65,8 @@
         <button id="compareButton">Compare</button>
     </div>
 
+    <div id="loading" style="display:none;">Processing files... Please wait.</div>
+
     <div id="result" class="section">
         <!-- Results will be displayed here -->
     </div>
@@ -125,6 +127,9 @@
     });
 
     document.getElementById('compareButton').addEventListener('click', () => {
+
+        document.getElementById('loading').style.display = 'block';
+
         if (!baseData || !compareData) {
             alert('Please upload both files.');
             return;
@@ -147,6 +152,7 @@
             worker.postMessage({ baseData, compareData, mappings });
 
             worker.onmessage = function(e) {
+                document.getElementById('loading').style.display = 'none';
                 if (e.data.error) {
                     alert('Error in worker: ' + e.data.error);
                 } else {
