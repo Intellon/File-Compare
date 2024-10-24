@@ -46,7 +46,7 @@ self.onmessage = function(e) {
                 }
                 return String(item[m.baseColumn] || '').toLowerCase().replace(/['"]+/g, '').trim();
             }).join('|');
-            return compareMap.has(key);
+            return !compareMap.has(key);
         });
 
         console.log('Result filtering completed');

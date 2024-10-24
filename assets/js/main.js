@@ -109,12 +109,12 @@ function displayResult(result) {
     resultDiv.innerHTML = '';
 
     if (result.length === 0) {
-        resultDiv.textContent = 'No matching entries found.';
+        resultDiv.textContent = 'No different entries found.';
         return;
     }
 
     const totalMatches = result.length;
-    resultDiv.innerHTML = `<p>Total number of matches: ${totalMatches}</p>`;
+    resultDiv.innerHTML = `<p>Total <b>${totalMatches}</b> matches are not in the comparison file.</p>`;
 
     // Create table for results
     const table = document.createElement('table');
