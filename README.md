@@ -1,6 +1,6 @@
 # Compare Excel and CSV Files
 
-An interactive web application for comparing Excel and CSV files based on selected criteria. The application allows you to upload two files, map columns (even if the columns have different names), and display matching entries.
+An interactive web application for comparing Excel and CSV files based on selected criteria. The application allows you to upload two files, map columns (even if the columns have different names), and display matching entries—or, as of the latest update, highlight only the non-matching ones.
 
 ## Features
 
@@ -8,6 +8,7 @@ An interactive web application for comparing Excel and CSV files based on select
 - **Delimiter Selection for CSV Files**: Choose delimiters for each CSV file individually.
 - **Column Mapping**: Map columns from the base file to columns in the comparison file, even if they have different names.
 - **Comparison of Multiple Criteria**: Select multiple columns for a more precise comparison.
+- **Show Only Non-Matching Entries**: A recent update allows filtering to display only entries from the base file that are not present in the comparison file.
 - **Error Handling**: The application includes enhanced error checks and provides clear error messages.
 - **Responsive Design**: The user interface adapts to different screen sizes, making it usable on mobile devices as well.
 - **User-Friendly Design**: Colors and styling ensure a clear and user-friendly application.
@@ -45,7 +46,7 @@ An interactive web application for comparing Excel and CSV files based on select
 6. **Run the Comparison**:
     - Click the "Compare" button to start the comparison.
 7. **View Results**:
-    - The matching entries will be displayed in a table below the button.
+    - View highlighted non-matching entries.
     - If no matches are found, an appropriate message will be shown.
 
 ## Example
